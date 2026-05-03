@@ -21,6 +21,10 @@
       --c3: #185FA5; --c3-light: #e6f1fb; --c3-mid: #b5d4f4;
       --c4: #7B3FB5; --c4-light: #f3eeff; --c4-mid: #d4b8f0;
       --c5: #2E7D32; --c5-light: #edf7ee; --c5-mid: #a5d6a7;
+
+      /* divergent likert palette: red (disagree) → grey (neutral) → green (agree) */
+      --lk-1: #C62828; --lk-2: #E57373; --lk-3: #BDBDBD; --lk-4: #66BB6A; --lk-5: #2E7D32;
+      --lk-1-light: #ffeaea; --lk-2-light: #fff0f0; --lk-3-light: #f5f5f5; --lk-4-light: #ecf7ec; --lk-5-light: #e8f5e9;
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -92,10 +96,11 @@
     .question-card { background: var(--white); border: 1.5px solid var(--border); border-radius: var(--radius); padding: 28px 24px; margin-bottom: 20px; animation: fadeInUp 0.25s ease; }
     .question-number { font-size: 11px; font-weight: 600; color: var(--red); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
     .question-text { font-family: "DM Serif Display", serif; font-size: 22px; line-height: 1.3; }
+    .question-type-tag { display: inline-block; font-size: 10px; font-weight: 600; color: var(--mid); background: var(--bg); padding: 3px 8px; border-radius: 10px; text-transform: uppercase; letter-spacing: 0.5px; margin-left: 8px; vertical-align: middle; }
 
     .options-list { display: flex; flex-direction: column; gap: 10px; animation: fadeInUp 0.3s ease; }
 
-    /* ── option buttons with colour theming ── */
+    /* ── option buttons (multiple choice) ── */
     .option-btn {
       background: var(--white);
       border: 1.5px solid var(--border);
@@ -170,11 +175,67 @@
     }
     .option-btn.selected .option-tick { display: flex; }
 
+    /* ── likert scale ── */
+    .likert-scale { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; animation: fadeInUp 0.3s ease; }
+    .likert-btn {
+      background: var(--white);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 16px 8px;
+      cursor: pointer;
+      font-family: "DM Sans", sans-serif;
+      transition: border-color 0.15s, background 0.15s, transform 0.1s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      text-align: center;
+    }
+    .likert-num {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: var(--lk-mid, var(--bg));
+      color: var(--lk-color, var(--charcoal));
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 600; font-size: 14px;
+      transition: background 0.15s, color 0.15s;
+    }
+    .likert-label { font-size: 11px; color: var(--mid); line-height: 1.2; min-height: 26px; display: flex; align-items: center; }
+    .likert-btn:hover { border-color: var(--lk-color); transform: translateY(-2px); }
+    .likert-btn.selected { border-color: var(--lk-color); background: var(--lk-light); transform: translateY(-2px); }
+    .likert-btn.selected .likert-num { background: var(--lk-color); color: white; }
+    .likert-anchors { display: flex; justify-content: space-between; margin-top: 12px; font-size: 11px; color: var(--mid); padding: 0 4px; }
+
+    /* ── word cloud input ── */
+    .word-input-wrap { animation: fadeInUp 0.3s ease; }
+    .word-input {
+      width: 100%; padding: 18px 20px;
+      font-size: 16px;
+      font-family: "DM Sans", sans-serif;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      outline: none;
+      background: var(--white);
+      color: var(--charcoal);
+    }
+    .word-input:focus { border-color: var(--red); }
+    .word-counter { font-size: 12px; color: var(--mid); text-align: right; margin-top: 6px; }
+    .word-counter.over { color: var(--red); }
+    .word-submit-btn { width: 100%; margin-top: 12px; }
+
     /* ── results (student) ── */
     .results-screen { min-height: 100vh; padding: 24px 20px; max-width: 520px; margin: 0 auto; }
     .results-header { text-align: center; margin-bottom: 28px; }
     .results-title { font-family: "DM Serif Display", serif; font-size: 28px; margin-bottom: 6px; }
     .results-q { font-size: 14px; color: var(--mid); line-height: 1.5; }
+
+    /* ── word cloud display ── */
+    .word-cloud-wrap { background: var(--white); border: 1.5px solid var(--border); border-radius: var(--radius); padding: 24px; min-height: 200px; display: flex; flex-wrap: wrap; gap: 8px 14px; justify-content: center; align-items: center; line-height: 1.4; }
+    .word-cloud-item { font-family: "DM Sans", sans-serif; font-weight: 500; transition: opacity 0.2s; animation: fadeInUp 0.3s ease; cursor: default; position: relative; }
+    .word-cloud-item.hidden-word { opacity: 0.25; text-decoration: line-through; }
+    .word-cloud-empty { font-size: 14px; color: var(--mid); }
+    .word-hide-btn { position: absolute; top: -6px; right: -10px; width: 16px; height: 16px; border-radius: 50%; background: var(--mid); color: white; font-size: 10px; border: none; cursor: pointer; display: none; align-items: center; justify-content: center; line-height: 1; padding: 0; }
+    .word-cloud-item:hover .word-hide-btn { display: flex; }
+    .word-hide-btn:hover { background: var(--red); }
 
     /* ── presenter ── */
     .presenter-screen { min-height: 100vh; }
@@ -192,15 +253,15 @@
 
     /* ── url share ── */
     .url-share { background: var(--white); border: 1.5px solid var(--border); border-radius: var(--radius-sm); padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
-    .url-text { font-size: 13px; color: var(--mid); font-family: monospace; }
-    .url-copy-btn { font-size: 12px; color: var(--red); cursor: pointer; font-weight: 500; background: none; border: none; font-family: "DM Sans", sans-serif; }
+    .url-text { font-size: 13px; color: var(--mid); font-family: monospace; word-break: break-all; }
+    .url-copy-btn { font-size: 12px; color: var(--red); cursor: pointer; font-weight: 500; background: none; border: none; font-family: "DM Sans", sans-serif; flex-shrink: 0; margin-left: 12px; }
 
     /* ── stat cards ── */
-    .live-panel-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 24px; }
+    .live-panel-grid { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 12px; margin-bottom: 24px; }
     .stat-card { background: var(--white); border: 1.5px solid var(--border); border-radius: var(--radius-sm); padding: 16px; text-align: center; }
-    .stat-value { font-family: "DM Serif Display", serif; font-size: 34px; display: block; transition: transform 0.15s; }
+    .stat-value { font-family: "DM Serif Display", serif; font-size: 30px; display: block; transition: transform 0.15s; }
     .stat-value.bump { animation: bump 0.25s ease; }
-    .stat-label { font-size: 12px; color: var(--mid); margin-top: 2px; }
+    .stat-label { font-size: 11px; color: var(--mid); margin-top: 2px; line-height: 1.2; }
 
     @keyframes bump {
       0%   { transform: scale(1); }
@@ -221,9 +282,20 @@
     .live-q-label { font-size: 11px; font-weight: 600; color: var(--red); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
     .live-q-text { font-family: "DM Serif Display", serif; font-size: 18px; margin-bottom: 16px; line-height: 1.3; }
 
+    /* ── presenter notes (visible at reveal) ── */
+    .presenter-notes-box {
+      background: #fffbe8; border: 1.5px solid #ffe88a;
+      border-radius: var(--radius-sm); padding: 14px 16px;
+      margin-top: 14px; font-size: 13px; line-height: 1.5;
+      color: #6a5a00;
+      display: none;
+    }
+    .presenter-notes-box.visible { display: block; animation: fadeInUp 0.25s ease; }
+    .presenter-notes-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; opacity: 0.7; }
+
     /* ── result bars ── */
     .result-bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
-    .result-bar-label { font-size: 13px; min-width: 100px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 500; }
+    .result-bar-label { font-size: 13px; min-width: 120px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 500; }
     .result-bar-track { flex: 1; background: var(--bg); border-radius: 6px; height: 32px; overflow: hidden; position: relative; }
     .result-bar-fill {
       height: 100%;
@@ -238,15 +310,6 @@
     .result-bar-pct { font-size: 12px; font-weight: 600; color: white; white-space: nowrap; }
     .result-bar-count { font-size: 12px; color: var(--mid); min-width: 36px; text-align: right; font-weight: 500; }
 
-    /* ── winner highlight ── */
-    .result-bar-row.winner .result-bar-label::after {
-      content: " 👑";
-      font-size: 11px;
-    }
-    .result-bar-row.winner .result-bar-track {
-      border: 1.5px solid rgba(0,0,0,0.08);
-    }
-
     /* ── presenter actions ── */
     .presenter-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
     .action-btn { padding: 10px 18px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 500; cursor: pointer; font-family: "DM Sans", sans-serif; border: 1.5px solid transparent; transition: opacity 0.15s; }
@@ -256,6 +319,28 @@
     .action-btn:hover { opacity: 0.88; }
     .action-btn:disabled { opacity: 0.35; cursor: not-allowed; pointer-events: none; }
 
+    /* ── reveal countdown overlay ── */
+    .reveal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(60,60,60,0.85);
+      display: none; align-items: center; justify-content: center;
+      z-index: 100;
+      backdrop-filter: blur(4px);
+    }
+    .reveal-overlay.visible { display: flex; }
+    .reveal-countdown {
+      font-family: "DM Serif Display", serif;
+      font-size: 140px;
+      color: white;
+      animation: countPulse 1s ease;
+    }
+    @keyframes countPulse {
+      0%   { transform: scale(0.4); opacity: 0; }
+      30%  { transform: scale(1.2); opacity: 1; }
+      70%  { transform: scale(1); opacity: 1; }
+      100% { transform: scale(1.1); opacity: 0; }
+    }
+
     /* ── chart ── */
     .chart-container { background: var(--white); border: 1.5px solid var(--border); border-radius: var(--radius); padding: 20px; margin-top: 16px; }
     .chart-toggle { display: flex; gap: 6px; margin-bottom: 16px; }
@@ -264,12 +349,20 @@
 
     /* ── questions editor ── */
     .question-editor { background: var(--white); border: 1.5px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 16px; }
-    .q-editor-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+    .q-editor-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; gap: 10px; }
     .q-num-badge { font-size: 11px; font-weight: 600; color: var(--red); text-transform: uppercase; letter-spacing: 0.5px; }
-    .q-delete-btn { background: none; border: none; color: var(--mid); cursor: pointer; font-size: 16px; padding: 2px 6px; border-radius: 4px; }
+    .q-type-select {
+      padding: 5px 10px; border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+      font-size: 12px; font-family: "DM Sans", sans-serif; color: var(--charcoal);
+      background: var(--white); outline: none; cursor: pointer;
+    }
+    .q-delete-btn { background: none; border: none; color: var(--mid); cursor: pointer; font-size: 16px; padding: 2px 6px; border-radius: 4px; margin-left: auto; }
     .q-delete-btn:hover { color: var(--red); background: var(--red-light); }
     .q-input { width: 100%; padding: 10px 12px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); font-size: 14px; font-family: "DM Sans", sans-serif; color: var(--charcoal); margin-bottom: 12px; outline: none; background: var(--bg); }
     .q-input:focus { border-color: var(--red); background: var(--white); }
+    .q-notes-input { width: 100%; padding: 8px 10px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); font-size: 12px; font-family: "DM Sans", sans-serif; color: var(--charcoal); margin-top: 10px; outline: none; background: var(--bg); resize: vertical; min-height: 50px; }
+    .q-notes-input:focus { border-color: var(--red); background: var(--white); }
+    .q-notes-label { display: block; font-size: 11px; color: var(--mid); margin-top: 8px; font-weight: 500; }
     .options-editor { display: flex; flex-direction: column; gap: 8px; }
     .option-row { display: flex; align-items: center; gap: 8px; }
     .opt-letter { width: 28px; height: 28px; border-radius: 50%; background: var(--bg); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; color: var(--mid); flex-shrink: 0; }
@@ -281,6 +374,9 @@
     .add-option-btn:hover { border-color: var(--red); color: var(--red); }
     .add-question-btn { width: 100%; background: none; border: 1.5px dashed var(--red-mid); border-radius: var(--radius); padding: 14px; font-size: 14px; color: var(--red); cursor: pointer; font-family: "DM Sans", sans-serif; font-weight: 500; margin-bottom: 24px; }
     .add-question-btn:hover { background: var(--red-light); }
+    .likert-anchor-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .likert-anchor-row .opt-input { font-size: 12px; }
+    .likert-anchor-label { font-size: 11px; color: var(--mid); margin-bottom: 4px; }
 
     /* ── settings ── */
     .settings-row { display: flex; align-items: center; justify-content: space-between; background: var(--white); border: 1.5px solid var(--border); border-radius: var(--radius-sm); padding: 14px 16px; margin-bottom: 10px; }
@@ -292,31 +388,44 @@
     .save-settings-btn { background: var(--red); color: white; border: none; padding: 11px 24px; border-radius: var(--radius-sm); font-size: 14px; font-weight: 500; cursor: pointer; font-family: "DM Sans", sans-serif; margin-top: 16px; }
     .save-settings-btn:hover { opacity: 0.88; }
 
+    /* ── auth status ── */
+    .auth-loading { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: var(--bg); z-index: 200; }
+    .auth-loading-text { font-size: 14px; color: var(--mid); }
+
+    @media (max-width: 600px) {
+      .live-panel-grid { grid-template-columns: 1fr 1fr; }
+    }
     @media (max-width: 480px) {
       .role-cards { grid-template-columns: 1fr; max-width: 320px; }
       .presenter-tabs .tab-btn { padding: 6px 10px; font-size: 12px; }
-      .live-panel-grid { grid-template-columns: 1fr 1fr; }
-      .live-panel-grid .stat-card:last-child { display: none; }
+      .likert-scale { gap: 4px; }
+      .likert-num { width: 28px; height: 28px; font-size: 13px; }
+      .likert-label { font-size: 10px; min-height: 30px; }
     }
   </style>
 </head>
 <body>
 
+  <!-- AUTH LOADING -->
+  <div class="auth-loading" id="auth-loading">
+    <div class="auth-loading-text">Connecting...</div>
+  </div>
+
   <!-- LANDING -->
   <div id="screen-landing" class="screen active">
     <div class="landing">
       <div class="landing-logo">Vote<span>InClass</span></div>
-      <div class="landing-sub">Live lecture voting</div>
+      <div class="landing-sub">Live lecture polling</div>
       <div class="role-cards">
         <div class="role-card" id="btn-student">
           <span class="role-icon">🎓</span>
-          <span class="role-label">I Am a Student</span>
-          <span class="role-desc">Cast your vote</span>
+          <span class="role-label">Student</span>
+          <span class="role-desc">Join and vote</span>
         </div>
         <div class="role-card" id="btn-presenter">
-          <span class="role-icon">📊</span>
-          <span class="role-label">I Am the Presenter</span>
-          <span class="role-desc">Manage questions</span>
+          <span class="role-icon">👨‍🏫</span>
+          <span class="role-label">Presenter</span>
+          <span class="role-desc">Run the session</span>
         </div>
       </div>
     </div>
@@ -327,10 +436,10 @@
     <div class="pin-screen">
       <div class="pin-title">Presenter Access</div>
       <div class="pin-sub">Enter your PIN to continue</div>
-      <input class="pin-input" type="password" maxlength="6" id="pin-input" placeholder="••••"/>
+      <input type="password" id="pin-input" class="pin-input" maxlength="10" inputmode="numeric"/>
       <div class="pin-error" id="pin-error"></div>
-      <button class="btn-primary" id="pin-submit">Enter</button>
-      <button class="btn-ghost" id="pin-back">Go Back</button>
+      <button class="btn-primary" id="pin-submit">Continue</button>
+      <button class="btn-ghost" id="pin-back">Back</button>
     </div>
   </div>
 
@@ -339,35 +448,20 @@
     <div class="voter-screen">
       <div class="voter-header">
         <div class="voter-brand">Vote<span>InClass</span></div>
-        <div class="live-badge" id="voter-live-badge">Live</div>
+        <div class="live-badge" id="voter-live-badge">● Live</div>
       </div>
-      <div id="voter-content">
-        <div class="waiting-state">
-          <div class="waiting-icon">⏳</div>
-          <div class="waiting-title">Waiting for a Question</div>
-          <div class="waiting-sub">Your lecturer will launch a question shortly.</div>
-        </div>
-      </div>
+      <div id="voter-content"></div>
     </div>
   </div>
 
   <!-- STUDENT RESULTS -->
   <div id="screen-results" class="screen">
     <div class="results-screen">
-      <div class="voter-header">
-        <div class="voter-brand">Vote<span>InClass</span></div>
-      </div>
       <div class="results-header">
         <div class="results-title">Results</div>
         <div class="results-q" id="results-question-text"></div>
       </div>
-      <div class="chart-container">
-        <div class="chart-toggle">
-          <button class="chart-toggle-btn active" data-type="bar">Bar Chart</button>
-          <button class="chart-toggle-btn" data-type="pie">Pie Chart</button>
-        </div>
-        <canvas id="student-results-chart" height="220"></canvas>
-      </div>
+      <div id="student-results-body"></div>
       <div style="text-align:center;margin-top:20px;font-size:13px;color:var(--mid)" id="results-total-text"></div>
       <div style="text-align:center;margin-top:16px">
         <button class="btn-ghost" id="btn-back-voting">Back to Voting</button>
@@ -393,7 +487,7 @@
 
         <div id="tab-live" class="panel active">
           <div class="url-share">
-            <span class="url-text">voteinclass.netlify.app</span>
+            <span class="url-text" id="share-url-text"></span>
             <button class="url-copy-btn" id="btn-copy-url">Copy Link</button>
           </div>
           <div class="live-panel-grid">
@@ -402,12 +496,16 @@
               <div class="stat-label">Votes Cast</div>
             </div>
             <div class="stat-card">
+              <span class="stat-value" id="stat-active">0</span>
+              <div class="stat-label">Active Voters</div>
+            </div>
+            <div class="stat-card">
               <span class="stat-value" id="stat-timer">—</span>
-              <div class="stat-label">Seconds Remaining</div>
+              <div class="stat-label">Seconds Left</div>
             </div>
             <div class="stat-card">
               <span class="stat-value" id="stat-qnum">—</span>
-              <div class="stat-label">Current Question</div>
+              <div class="stat-label">Question</div>
             </div>
           </div>
           <div id="q-progress-wrap" class="q-progress" style="display:none"></div>
@@ -420,6 +518,10 @@
               <div class="live-q-label" id="live-q-num">Question 1</div>
               <div class="live-q-text" id="live-q-text"></div>
               <div id="live-results"></div>
+              <div class="presenter-notes-box" id="presenter-notes-box">
+                <div class="presenter-notes-label">Your notes</div>
+                <div id="presenter-notes-content"></div>
+              </div>
             </div>
             <div class="presenter-actions">
               <button class="action-btn red" id="btn-launch">Launch Question</button>
@@ -428,9 +530,9 @@
               <button class="action-btn outline" id="btn-reset">Reset</button>
             </div>
             <div class="chart-container" id="chart-area" style="display:none">
-              <div class="chart-toggle">
-                <button class="chart-toggle-btn active" data-type="bar">Bar Chart</button>
-                <button class="chart-toggle-btn" data-type="pie">Pie Chart</button>
+              <div class="chart-toggle" id="chart-toggle-presenter">
+                <button class="chart-toggle-btn active" data-type="bar">Bar</button>
+                <button class="chart-toggle-btn" data-type="pie">Pie</button>
               </div>
               <canvas id="results-chart" height="200"></canvas>
             </div>
@@ -470,7 +572,7 @@
           <div class="settings-row">
             <div>
               <div class="settings-label">Presenter PIN</div>
-              <div class="settings-sub">Must be at least 4 digits</div>
+              <div class="settings-sub">At least 4 digits, saved permanently</div>
             </div>
             <div class="settings-control">
               <input type="password" id="setting-pin" placeholder="New PIN" style="width:110px"/>
@@ -483,10 +585,17 @@
     </div>
   </div>
 
+  <!-- REVEAL OVERLAY -->
+  <div class="reveal-overlay" id="reveal-overlay">
+    <div class="reveal-countdown" id="reveal-countdown">3</div>
+  </div>
+
   <script type="module">
     import { initializeApp }    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getDatabase, ref, set, get, onValue, update, runTransaction }
+    import { getDatabase, ref, set, get, onValue, update, runTransaction, onDisconnect, push, child }
       from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+    import { getAuth, signInAnonymously, onAuthStateChanged }
+      from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
     const firebaseConfig = {
       apiKey:            "AIzaSyAKNF6omEhGc67ZlAZT7o05mBjndEEBRIc",
@@ -497,11 +606,12 @@
       messagingSenderId: "4589304235",
       appId:             "1:4589304235:web:414e33a293b19ad0e4faee"
     };
-    const app = initializeApp(firebaseConfig);
-    const db  = getDatabase(app);
+    const app  = initializeApp(firebaseConfig);
+    const db   = getDatabase(app);
+    const auth = getAuth(app);
     const dbRef = path => ref(db, path);
 
-    /* ── colour palette per option index ── */
+    /* ── option palette ── */
     const OPT_COLORS = [
       { color: "#E4042C", light: "#fff0f2", mid: "#ffd6db" },
       { color: "#E8840A", light: "#fff5eb", mid: "#ffdbb0" },
@@ -511,24 +621,83 @@
       { color: "#2E7D32", light: "#edf7ee", mid: "#a5d6a7" }
     ];
 
-    /* ── state ── */
-    let PRESENTER_PIN   = "1234";
-    let TIMER_DURATION  = 60;
-    let timerInterval   = null;
-    let presenterChart  = null;
-    let studentChart    = null;
-    let currentChartType = "bar";
-    let currentSChart    = "bar";
-    let hasVoted         = false;
-    let presenterQIdx    = 0;
-    let presenterPhase   = "idle";
-    let lastVoteCount    = 0;
-    let localQuestions   = [
-      { text: "What is the primary driver of consumer behaviour according to Bauman?",
-        options: ["Liquid identity","Social status","Economic utility","Brand loyalty"] },
-      { text: "Which concept best describes surveillance capitalism?",
-        options: ["Data as commodity","Digital freedom","Platform neutrality","Algorithmic fairness"] }
+    const LIKERT_COLORS = [
+      { color: "#C62828", light: "#ffeaea", mid: "#ffd6d6" },
+      { color: "#E57373", light: "#fff0f0", mid: "#ffe0e0" },
+      { color: "#9E9E9E", light: "#f5f5f5", mid: "#e0e0e0" },
+      { color: "#66BB6A", light: "#ecf7ec", mid: "#c8e6c9" },
+      { color: "#2E7D32", light: "#e8f5e9", mid: "#a5d6a7" }
     ];
+
+    /* ── state ── */
+    let TIMER_DURATION    = 60;
+    let timerInterval     = null;
+    let presenterChart    = null;
+    let studentChart      = null;
+    let currentChartType  = "bar";
+    let currentSChart     = "bar";
+    let presenterQIdx     = 0;
+    let presenterPhase    = "idle";
+    let lastVoteCount     = 0;
+    let myUid             = null;
+    let isPresenter       = false;
+    let myVotes           = {}; // {qIdx: optionIndex} — local cache to lock the UI
+    let lastSession       = null;
+    let hiddenWords       = new Set(); // presenter-only, in-memory moderation
+
+    let localQuestions = [
+      { type: "mc",
+        text: "How convinced are you by Bauman's framing of consumption as identity work?",
+        options: ["Very convinced","Somewhat convinced","Sceptical","Not convinced"],
+        notes: "" },
+      { type: "likert",
+        text: "Surveillance capitalism is best understood as an extension of older capitalist logics, not a rupture from them.",
+        options: ["Strongly disagree","Disagree","Neutral","Agree","Strongly agree"],
+        anchors: { low: "Strongly disagree", high: "Strongly agree" },
+        notes: "" },
+      { type: "word",
+        text: "In one word, what does 'liquid modernity' mean to you?",
+        notes: "" }
+    ];
+
+    /* ══════════════════════════════════
+       AUTH BOOTSTRAP
+       Anonymous Firebase auth assigns a stable UID per device.
+       This UID is what gates one-vote-per-question.
+    ══════════════════════════════════ */
+    onAuthStateChanged(auth, async user => {
+      if (user) {
+        myUid = user.uid;
+
+        // Track active presence for the "active voters" stat.
+        const presenceRef = dbRef(`presence/${myUid}`);
+        await set(presenceRef, { active: true, ts: Date.now() });
+        onDisconnect(presenceRef).remove();
+
+        // Hide the loading overlay and show the landing.
+        document.getElementById("auth-loading").style.display = "none";
+      }
+    });
+
+    signInAnonymously(auth).catch(err => {
+      console.error("Auth failed:", err);
+      document.getElementById("auth-loading").innerHTML =
+        '<div class="auth-loading-text" style="color:var(--red)">Connection failed. Please refresh.</div>';
+    });
+
+    /* ── load global settings (timer, pin) once on boot ── */
+    async function loadGlobalSettings() {
+      const snap = await get(dbRef("settings"));
+      const s = snap.val();
+      if (s) {
+        if (typeof s.timerDuration === "number" && s.timerDuration >= 10) TIMER_DURATION = s.timerDuration;
+        if (s.defaultChart === "pie" || s.defaultChart === "bar") {
+          currentChartType = s.defaultChart;
+          currentSChart    = s.defaultChart;
+        }
+      }
+    }
+    loadGlobalSettings();
 
     /* ══════════════════════════════════
        SCREEN HELPERS
@@ -554,7 +723,8 @@
     document.getElementById("btn-presenter").addEventListener("click", goToPin);
 
     function goToVoter() {
-      hasVoted = false;
+      isPresenter = false;
+      myVotes = {};
       showScreen("screen-voter");
       subscribeSession();
     }
@@ -566,35 +736,55 @@
     }
 
     /* ══════════════════════════════════
-       PIN
+       PIN — validated against Firebase
     ══════════════════════════════════ */
     document.getElementById("pin-back").addEventListener("click", () => showScreen("screen-landing"));
     document.getElementById("pin-submit").addEventListener("click", checkPin);
     document.getElementById("pin-input").addEventListener("keydown", e => { if (e.key === "Enter") checkPin(); });
 
-    function checkPin() {
+    async function checkPin() {
       const val = document.getElementById("pin-input").value.trim();
-      if (val === PRESENTER_PIN) {
+      const errEl = document.getElementById("pin-error");
+      errEl.textContent = "";
+      if (!val) { errEl.textContent = "Please enter the PIN."; return; }
+
+      const snap = await get(dbRef("settings/pin"));
+      const storedPin = snap.val() || "1234"; // default on first run
+
+      if (val === storedPin) {
+        isPresenter = true;
         showScreen("screen-presenter");
         loadPresenterData();
         subscribeSession();
+
+        // Reflect the saved timer in the settings field.
+        document.getElementById("setting-timer").value = TIMER_DURATION;
+        document.getElementById("setting-chart").value = currentChartType;
       } else {
-        document.getElementById("pin-error").textContent = "Incorrect PIN. Please try again.";
+        errEl.textContent = "Incorrect PIN. Please try again.";
       }
     }
 
     /* ══════════════════════════════════
-       FIREBASE LISTENER
+       FIREBASE LISTENERS
     ══════════════════════════════════ */
     function subscribeSession() {
       onValue(dbRef("session"), snap => {
-        const s = snap.val();
-        if (!s) return;
+        const s = snap.val() || {};
+        lastSession = s;
         const voterActive    = document.getElementById("screen-voter").classList.contains("active");
         const resultsActive  = document.getElementById("screen-results").classList.contains("active");
         const presenterActive = document.getElementById("screen-presenter").classList.contains("active");
         if (voterActive || resultsActive) syncVoterView(s);
         if (presenterActive) syncPresenterLive(s);
+      });
+
+      // Active voter count, for the presenter only.
+      onValue(dbRef("presence"), snap => {
+        const data = snap.val() || {};
+        const count = Object.keys(data).length;
+        const el = document.getElementById("stat-active");
+        if (el) el.textContent = count;
       });
     }
 
@@ -604,75 +794,79 @@
     function syncVoterView(s) {
       const badge   = document.getElementById("voter-live-badge");
       const content = document.getElementById("voter-content");
+      const qIdx    = s.questionIndex || 0;
+
       if (!s.phase || s.phase === "idle") {
-        hasVoted = false;
         badge.classList.remove("visible");
         content.innerHTML = waitingHTML();
         return;
       }
       if (s.phase === "revealed") {
         badge.classList.remove("visible");
-        const q     = (s.questions || [])[s.questionIndex || 0];
-        const votes = ((s.votes || {})[s.questionIndex || 0]) || {};
-        renderStudentResults(q, votes);
+        const q     = (s.questions || [])[qIdx];
+        const votes = ((s.votes || {})[qIdx]) || {};
+        const words = ((s.words || {})[qIdx]) || {};
+        renderStudentResults(q, votes, words, qIdx);
         return;
       }
       if (s.phase === "voting") {
         badge.classList.add("visible");
-        if (hasVoted) { content.innerHTML = votedHTML(); return; }
-        const q        = (s.questions || [])[s.questionIndex || 0];
+
+        // Hard guard against late submissions: timer expired already.
+        const expired = s.timerEnd && Date.now() > s.timerEnd;
+
+        // Already voted on this specific question?
+        const alreadyVoted = myVotes[qIdx] !== undefined;
+
+        if (alreadyVoted) { content.innerHTML = votedHTML(); return; }
+        if (expired)      { content.innerHTML = waitingHTML("Time is up. Waiting for the reveal..."); return; }
+
+        const q = (s.questions || [])[qIdx];
+        if (!q) { content.innerHTML = waitingHTML(); return; }
+
         const secsLeft = s.timerEnd ? Math.max(0, Math.round((s.timerEnd - Date.now()) / 1000)) : TIMER_DURATION;
-        renderVotingUI(q, s.questionIndex || 0, secsLeft, s.timerEnd);
+        renderVotingUI(q, qIdx, secsLeft, s.timerEnd);
       }
     }
 
-    function waitingHTML() {
+    function waitingHTML(msg) {
       return `<div class="waiting-state">
         <div class="waiting-icon">⏳</div>
-        <div class="waiting-title">Waiting for a Question</div>
-        <div class="waiting-sub">Your lecturer will launch a question shortly.</div>
+        <div class="waiting-title">${msg ? "Hold on" : "Waiting for a Question"}</div>
+        <div class="waiting-sub">${msg || "Your lecturer will launch a question shortly."}</div>
       </div>`;
     }
 
     function votedHTML() {
       return `<div class="voted-state">
         <div class="voted-icon">✓</div>
-        <div class="voted-title">Vote Received</div>
+        <div class="voted-title">Response Received</div>
         <div class="voted-sub">Waiting for the results...</div>
       </div>`;
     }
 
     function renderVotingUI(q, qIdx, secsLeft, timerEnd) {
       if (!q) return;
-      const letters  = ["A","B","C","D","E","F"];
-      const pct      = Math.round(secsLeft / TIMER_DURATION * 100);
-      const optsHTML = (q.options || []).map((opt, i) => {
-        const c = OPT_COLORS[i] || OPT_COLORS[0];
-        return `<button class="option-btn" data-idx="${i}"
-          style="--opt-color:${c.color};--opt-light:${c.light};--opt-mid:${c.mid}">
-          <div class="option-letter">${letters[i]}</div>
-          <span>${opt || "Option " + letters[i]}</span>
-          <div class="option-tick">✓</div>
-        </button>`;
-      }).join("");
+      const type = q.type || "mc";
+      const pct  = Math.round(secsLeft / TIMER_DURATION * 100);
+
+      let bodyHTML = "";
+      if (type === "mc") bodyHTML = renderMCOptions(q);
+      else if (type === "likert") bodyHTML = renderLikertOptions(q);
+      else if (type === "word")   bodyHTML = renderWordInput();
+
+      const typeTag = type === "mc" ? "Multiple choice" : type === "likert" ? "Likert" : "Open word";
 
       document.getElementById("voter-content").innerHTML = `
         <div class="timer-text" id="voter-timer-text">${secsLeft}s remaining</div>
         <div class="timer-bar-wrap"><div class="timer-bar" id="voter-timer-bar" style="width:${pct}%"></div></div>
         <div class="question-card">
-          <div class="question-number">Question ${qIdx + 1}</div>
-          <div class="question-text">${q.text || "Question"}</div>
+          <div class="question-number">Question ${qIdx + 1}<span class="question-type-tag">${typeTag}</span></div>
+          <div class="question-text">${escapeHtml(q.text || "Question")}</div>
         </div>
-        <div class="options-list">${optsHTML}</div>`;
+        <div id="voter-input-area">${bodyHTML}</div>`;
 
-      document.querySelectorAll(".option-btn").forEach(btn => {
-        btn.addEventListener("click", () => {
-          if (hasVoted) return;
-          document.querySelectorAll(".option-btn").forEach(b => b.classList.remove("selected"));
-          btn.classList.add("selected");
-          setTimeout(() => castVote(parseInt(btn.dataset.idx), qIdx), 500);
-        });
-      });
+      attachVoterHandlers(q, qIdx, timerEnd);
 
       if (timerInterval) clearInterval(timerInterval);
       timerInterval = setInterval(() => {
@@ -681,52 +875,213 @@
         const txt = document.getElementById("voter-timer-text");
         if (bar) bar.style.width = Math.round(rem / TIMER_DURATION * 100) + "%";
         if (txt) txt.textContent = rem + "s remaining";
-        if (rem <= 0) clearInterval(timerInterval);
+        if (rem <= 0) {
+          clearInterval(timerInterval);
+          // Lock the input so a student cannot squeeze in a vote after time.
+          document.querySelectorAll(".option-btn, .likert-btn").forEach(b => b.style.pointerEvents = "none");
+          const wi = document.getElementById("word-input");
+          if (wi) wi.disabled = true;
+          const ws = document.getElementById("word-submit");
+          if (ws) ws.disabled = true;
+        }
       }, 500);
     }
 
+    function renderMCOptions(q) {
+      const letters = ["A","B","C","D","E","F"];
+      const opts = (q.options || []).map((opt, i) => {
+        const c = OPT_COLORS[i] || OPT_COLORS[0];
+        return `<button class="option-btn" data-idx="${i}"
+          style="--opt-color:${c.color};--opt-light:${c.light};--opt-mid:${c.mid}">
+          <div class="option-letter">${letters[i]}</div>
+          <span>${escapeHtml(opt || "Option " + letters[i])}</span>
+          <div class="option-tick">✓</div>
+        </button>`;
+      }).join("");
+      return `<div class="options-list">${opts}</div>`;
+    }
+
+    function renderLikertOptions(q) {
+      const opts = (q.options || []);
+      const buttons = opts.map((label, i) => {
+        const c = LIKERT_COLORS[i] || LIKERT_COLORS[2];
+        return `<button class="likert-btn" data-idx="${i}"
+          style="--lk-color:${c.color};--lk-light:${c.light};--lk-mid:${c.mid}">
+          <div class="likert-num">${i + 1}</div>
+          <div class="likert-label">${escapeHtml(label || "")}</div>
+        </button>`;
+      }).join("");
+      const low  = (q.anchors && q.anchors.low)  || opts[0] || "";
+      const high = (q.anchors && q.anchors.high) || opts[opts.length - 1] || "";
+      return `<div class="likert-scale">${buttons}</div>
+              <div class="likert-anchors"><span>${escapeHtml(low)}</span><span>${escapeHtml(high)}</span></div>`;
+    }
+
+    function renderWordInput() {
+      return `<div class="word-input-wrap">
+        <input type="text" id="word-input" class="word-input" maxlength="20"
+               placeholder="Type one word..." autocomplete="off"/>
+        <div class="word-counter"><span id="word-count">0</span> / 20</div>
+        <button class="btn-primary word-submit-btn" id="word-submit" disabled>Submit</button>
+      </div>`;
+    }
+
+    function attachVoterHandlers(q, qIdx, timerEnd) {
+      const type = q.type || "mc";
+
+      if (type === "mc") {
+        document.querySelectorAll(".option-btn").forEach(btn => {
+          btn.addEventListener("click", () => {
+            if (myVotes[qIdx] !== undefined) return;
+            if (timerEnd && Date.now() > timerEnd) return;
+            document.querySelectorAll(".option-btn").forEach(b => b.classList.remove("selected"));
+            btn.classList.add("selected");
+            setTimeout(() => castVote(parseInt(btn.dataset.idx), qIdx), 400);
+          });
+        });
+      } else if (type === "likert") {
+        document.querySelectorAll(".likert-btn").forEach(btn => {
+          btn.addEventListener("click", () => {
+            if (myVotes[qIdx] !== undefined) return;
+            if (timerEnd && Date.now() > timerEnd) return;
+            document.querySelectorAll(".likert-btn").forEach(b => b.classList.remove("selected"));
+            btn.classList.add("selected");
+            setTimeout(() => castVote(parseInt(btn.dataset.idx), qIdx), 400);
+          });
+        });
+      } else if (type === "word") {
+        const input  = document.getElementById("word-input");
+        const counter = document.getElementById("word-count");
+        const submit = document.getElementById("word-submit");
+        input.addEventListener("input", () => {
+          const v = input.value.trim();
+          counter.textContent = input.value.length;
+          submit.disabled = v.length === 0 || v.length > 20;
+        });
+        input.addEventListener("keydown", e => {
+          if (e.key === "Enter" && !submit.disabled) submit.click();
+        });
+        submit.addEventListener("click", () => {
+          if (myVotes[qIdx] !== undefined) return;
+          if (timerEnd && Date.now() > timerEnd) return;
+          const word = input.value.trim().toLowerCase();
+          if (!word) return;
+          submitWord(word, qIdx);
+        });
+      }
+    }
+
+    /* ══════════════════════════════════
+       VOTE WRITES
+       Keyed by uid → enforces one vote per device per question.
+    ══════════════════════════════════ */
     async function castVote(optionIndex, qIdx) {
-      if (hasVoted) return;
-      hasVoted = true;
+      if (!myUid) return;
+      if (myVotes[qIdx] !== undefined) return;
+      // Read the live timer end and refuse late submissions server-side.
+      const sessSnap = await get(dbRef("session"));
+      const s = sessSnap.val() || {};
+      if (s.phase !== "voting") return;
+      if (s.timerEnd && Date.now() > s.timerEnd) return;
+
+      myVotes[qIdx] = optionIndex;
       document.getElementById("voter-content").innerHTML = votedHTML();
       document.getElementById("voter-live-badge").classList.remove("visible");
-      await runTransaction(dbRef(`session/votes/${qIdx}/${optionIndex}`), current => (current || 0) + 1);
+
+      // Write the per-uid choice. Aggregation happens at read time.
+      await set(dbRef(`session/voters/${qIdx}/${myUid}`), {
+        choice: optionIndex,
+        ts: Date.now()
+      });
+      // Maintain a tally counter for fast aggregation.
+      await runTransaction(dbRef(`session/votes/${qIdx}/${optionIndex}`), c => (c || 0) + 1);
+    }
+
+    async function submitWord(word, qIdx) {
+      if (!myUid) return;
+      if (myVotes[qIdx] !== undefined) return;
+      const sessSnap = await get(dbRef("session"));
+      const s = sessSnap.val() || {};
+      if (s.phase !== "voting") return;
+      if (s.timerEnd && Date.now() > s.timerEnd) return;
+
+      myVotes[qIdx] = word;
+      document.getElementById("voter-content").innerHTML = votedHTML();
+      document.getElementById("voter-live-badge").classList.remove("visible");
+
+      // One word per uid per question. The uid key prevents duplicate spam.
+      await set(dbRef(`session/words/${qIdx}/${myUid}`), {
+        word: word,
+        ts: Date.now()
+      });
     }
 
     /* ── student results ── */
-    function renderStudentResults(q, votes) {
+    function renderStudentResults(q, votes, words, qIdx) {
       if (!q) return;
-      const total = Object.values(votes).reduce((a, b) => a + b, 0);
+      const body = document.getElementById("student-results-body");
       document.getElementById("results-question-text").textContent = q.text || "";
-      document.getElementById("results-total-text").textContent =
-        total + (total === 1 ? " vote cast" : " votes cast");
+
+      if (q.type === "word") {
+        const total = Object.keys(words).length;
+        document.getElementById("results-total-text").textContent =
+          total + (total === 1 ? " response" : " responses");
+        body.innerHTML = `<div class="word-cloud-wrap" id="student-cloud"></div>`;
+        renderWordCloud("student-cloud", words, false);
+      } else {
+        const total = Object.values(votes).reduce((a, b) => a + b, 0);
+        document.getElementById("results-total-text").textContent =
+          total + (total === 1 ? " vote cast" : " votes cast");
+        body.innerHTML = `
+          <div class="chart-container">
+            <div class="chart-toggle" id="chart-toggle-student">
+              <button class="chart-toggle-btn ${currentSChart === 'bar' ? 'active' : ''}" data-type="bar">Bar</button>
+              <button class="chart-toggle-btn ${currentSChart === 'pie' ? 'active' : ''}" data-type="pie">Pie</button>
+            </div>
+            <canvas id="student-results-chart" height="220"></canvas>
+          </div>`;
+        drawChart("student-results-chart", currentSChart, q, votes, "student");
+
+        document.querySelectorAll("#chart-toggle-student .chart-toggle-btn").forEach(btn => {
+          btn.addEventListener("click", () => {
+            currentSChart = btn.dataset.type;
+            document.querySelectorAll("#chart-toggle-student .chart-toggle-btn")
+              .forEach(b => b.classList.toggle("active", b.dataset.type === currentSChart));
+            // Use the live snapshot so we are always on the right question.
+            const s2 = lastSession || {};
+            const qLive = (s2.questions || localQuestions)[qIdx];
+            const v2    = ((s2.votes || {})[qIdx]) || {};
+            drawChart("student-results-chart", currentSChart, qLive, v2, "student");
+          });
+        });
+      }
+
       showScreen("screen-results");
-      drawChart("student-results-chart", currentSChart, q, votes, "student");
     }
 
     document.getElementById("btn-back-voting").addEventListener("click", goToVoter);
-
-    document.querySelectorAll("#screen-results .chart-toggle-btn").forEach(btn => {
-      btn.addEventListener("click", async () => {
-        currentSChart = btn.dataset.type;
-        document.querySelectorAll("#screen-results .chart-toggle-btn")
-          .forEach(b => b.classList.toggle("active", b.dataset.type === currentSChart));
-        const snap  = await get(dbRef("session"));
-        const s     = snap.val() || {};
-        const q     = (s.questions || localQuestions)[presenterQIdx];
-        const votes = ((s.votes || {})[presenterQIdx]) || {};
-        drawChart("student-results-chart", currentSChart, q, votes, "student");
-      });
-    });
 
     /* ══════════════════════════════════
        PRESENTER — DATA
     ══════════════════════════════════ */
     async function loadPresenterData() {
       const snap = await get(dbRef("session/questions"));
-      if (snap.val()) localQuestions = snap.val();
+      if (snap.val()) localQuestions = snap.val().map(normaliseQuestion);
       renderQuestionsEditor();
       renderLivePanelStatic();
+    }
+
+    function normaliseQuestion(q) {
+      // Migrate old data that may not have a type field.
+      if (!q.type) q.type = "mc";
+      if (q.type === "likert" && (!q.options || q.options.length !== 5)) {
+        q.options = ["Strongly disagree","Disagree","Neutral","Agree","Strongly agree"];
+      }
+      if (q.type === "likert" && !q.anchors) {
+        q.anchors = { low: q.options[0], high: q.options[4] };
+      }
+      if (q.notes === undefined) q.notes = "";
+      return q;
     }
 
     document.querySelectorAll(".tab-btn").forEach(btn => {
@@ -744,59 +1099,128 @@
       const container = document.getElementById("questions-editor");
       container.innerHTML = "";
       const letters = ["A","B","C","D","E","F"];
-      localQuestions.forEach((q, qi) => {
-        const optsHTML = (q.options || []).map((opt, oi) => `
-          <div class="option-row">
-            <div class="opt-letter">${letters[oi]}</div>
-            <input class="opt-input" value="${opt}" placeholder="Option ${letters[oi]}"
-              data-qi="${qi}" data-oi="${oi}"/>
-            ${q.options.length > 2
-              ? `<button class="opt-remove" data-qi="${qi}" data-oi="${oi}">✕</button>`
-              : ""}
-          </div>`).join("");
 
+      localQuestions.forEach((q, qi) => {
         const card = document.createElement("div");
         card.className = "question-editor";
+
+        let bodyHTML = "";
+        if (q.type === "mc") {
+          const optsHTML = (q.options || []).map((opt, oi) => `
+            <div class="option-row">
+              <div class="opt-letter">${letters[oi]}</div>
+              <input class="opt-input" value="${escapeAttr(opt)}" placeholder="Option ${letters[oi]}"
+                data-qi="${qi}" data-oi="${oi}"/>
+              ${q.options.length > 2
+                ? `<button class="opt-remove" data-qi="${qi}" data-oi="${oi}">✕</button>`
+                : ""}
+            </div>`).join("");
+          bodyHTML = `<div class="options-editor">${optsHTML}</div>
+                      ${q.options.length < 6
+                        ? `<button class="add-option-btn" data-qi="${qi}">+ Add Option</button>`
+                        : ""}`;
+        } else if (q.type === "likert") {
+          const optsHTML = (q.options || []).map((opt, oi) => `
+            <div class="option-row">
+              <div class="opt-letter">${oi + 1}</div>
+              <input class="opt-input" value="${escapeAttr(opt)}" placeholder="Likert label ${oi + 1}"
+                data-qi="${qi}" data-oi="${oi}" data-likert="1"/>
+            </div>`).join("");
+          bodyHTML = `
+            <div class="likert-anchor-label">5-point scale labels (left to right)</div>
+            <div class="options-editor">${optsHTML}</div>
+            <div class="likert-anchor-label" style="margin-top:14px">Anchor labels (shown under the scale)</div>
+            <div class="likert-anchor-row">
+              <input class="opt-input" value="${escapeAttr((q.anchors||{}).low||"")}" placeholder="Low anchor"
+                data-qi="${qi}" data-anchor="low"/>
+              <input class="opt-input" value="${escapeAttr((q.anchors||{}).high||"")}" placeholder="High anchor"
+                data-qi="${qi}" data-anchor="high"/>
+            </div>`;
+        } else if (q.type === "word") {
+          bodyHTML = `<div style="font-size:12px;color:var(--mid);padding:10px;background:var(--bg);border-radius:6px">
+                       Students will type one word, capped at 20 characters. Words are aggregated into a live word cloud at reveal.
+                     </div>`;
+        }
+
         card.innerHTML = `
           <div class="q-editor-header">
             <span class="q-num-badge">Question ${qi + 1}</span>
+            <select class="q-type-select" data-qi="${qi}">
+              <option value="mc"     ${q.type === "mc"     ? "selected" : ""}>Multiple choice</option>
+              <option value="likert" ${q.type === "likert" ? "selected" : ""}>Likert (1-5)</option>
+              <option value="word"   ${q.type === "word"   ? "selected" : ""}>Word cloud</option>
+            </select>
             ${localQuestions.length > 1
               ? `<button class="q-delete-btn" data-qi="${qi}">✕</button>`
               : ""}
           </div>
-          <input class="q-input" value="${q.text}" placeholder="Enter your question here..."
+          <input class="q-input" value="${escapeAttr(q.text)}" placeholder="Enter your question here..."
             data-qi="${qi}"/>
-          <div class="options-editor">${optsHTML}</div>
-          ${q.options.length < 6
-            ? `<button class="add-option-btn" data-qi="${qi}">+ Add Option</button>`
-            : ""}`;
+          ${bodyHTML}
+          <label class="q-notes-label">Presenter notes (visible only to you at reveal)</label>
+          <textarea class="q-notes-input" placeholder="What do you want to highlight or ask after the reveal?"
+            data-qi="${qi}" data-field="notes">${escapeHtml(q.notes || "")}</textarea>`;
         container.appendChild(card);
       });
 
+      // Wire up handlers
       container.querySelectorAll(".q-input").forEach(el =>
         el.addEventListener("input", e => { localQuestions[+e.target.dataset.qi].text = e.target.value; }));
+
       container.querySelectorAll(".opt-input").forEach(el =>
-        el.addEventListener("input", e => { localQuestions[+e.target.dataset.qi].options[+e.target.dataset.oi] = e.target.value; }));
+        el.addEventListener("input", e => {
+          const qi = +e.target.dataset.qi;
+          if (e.target.dataset.anchor) {
+            localQuestions[qi].anchors = localQuestions[qi].anchors || {};
+            localQuestions[qi].anchors[e.target.dataset.anchor] = e.target.value;
+          } else {
+            const oi = +e.target.dataset.oi;
+            localQuestions[qi].options[oi] = e.target.value;
+          }
+        }));
+
+      container.querySelectorAll(".q-notes-input").forEach(el =>
+        el.addEventListener("input", e => { localQuestions[+e.target.dataset.qi].notes = e.target.value; }));
+
       container.querySelectorAll(".opt-remove").forEach(el =>
         el.addEventListener("click", e => {
           const qi = +e.target.dataset.qi, oi = +e.target.dataset.oi;
           localQuestions[qi].options.splice(oi, 1);
           renderQuestionsEditor();
         }));
+
       container.querySelectorAll(".q-delete-btn").forEach(el =>
         el.addEventListener("click", e => {
           localQuestions.splice(+e.target.dataset.qi, 1);
           renderQuestionsEditor();
         }));
+
       container.querySelectorAll(".add-option-btn").forEach(el =>
         el.addEventListener("click", e => {
           localQuestions[+e.target.dataset.qi].options.push("");
           renderQuestionsEditor();
         }));
+
+      container.querySelectorAll(".q-type-select").forEach(el =>
+        el.addEventListener("change", e => {
+          const qi = +e.target.dataset.qi;
+          const newType = e.target.value;
+          localQuestions[qi].type = newType;
+          if (newType === "mc")  localQuestions[qi].options = ["", "", "", ""];
+          if (newType === "likert") {
+            localQuestions[qi].options = ["Strongly disagree","Disagree","Neutral","Agree","Strongly agree"];
+            localQuestions[qi].anchors = { low: "Strongly disagree", high: "Strongly agree" };
+          }
+          if (newType === "word") {
+            delete localQuestions[qi].options;
+            delete localQuestions[qi].anchors;
+          }
+          renderQuestionsEditor();
+        }));
     }
 
     document.getElementById("btn-add-question").addEventListener("click", () => {
-      localQuestions.push({ text: "", options: ["", ""] });
+      localQuestions.push({ type: "mc", text: "", options: ["", ""], notes: "" });
       renderQuestionsEditor();
       setTimeout(() => {
         const cards = document.querySelectorAll(".question-editor");
@@ -805,7 +1229,14 @@
     });
 
     document.getElementById("btn-save-questions").addEventListener("click", async () => {
-      await set(dbRef("session/questions"), localQuestions);
+      // Strip empty word-type options to avoid Firebase complaining about undefined.
+      const clean = localQuestions.map(q => {
+        const c = { type: q.type, text: q.text || "", notes: q.notes || "" };
+        if (q.type === "mc")     c.options = q.options || [];
+        if (q.type === "likert") { c.options = q.options || []; c.anchors = q.anchors || {}; }
+        return c;
+      });
+      await set(dbRef("session/questions"), clean);
       document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
       document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
       document.querySelector('[data-tab="tab-live"]').classList.add("active");
@@ -830,6 +1261,7 @@
       document.getElementById("stat-qnum").textContent =
         (presenterQIdx + 1) + " / " + localQuestions.length;
       renderProgressDots();
+      document.getElementById("share-url-text").textContent = window.location.origin + window.location.pathname;
       if (!q) {
         document.getElementById("no-question-msg").style.display = "block";
         document.getElementById("live-question-area").style.display = "none";
@@ -840,16 +1272,23 @@
       document.getElementById("live-q-num").textContent =
         "Question " + (presenterQIdx + 1) + " of " + localQuestions.length;
       document.getElementById("live-q-text").textContent = q.text;
+      // Notes are hidden until reveal.
+      document.getElementById("presenter-notes-box").classList.remove("visible");
       updatePresenterButtons();
     }
 
     function syncPresenterLive(s) {
       presenterQIdx  = s.questionIndex || 0;
       presenterPhase = s.phase || "idle";
-      const questions = s.questions || localQuestions;
+      const questions = (s.questions || localQuestions).map(normaliseQuestion);
       const q         = questions[presenterQIdx];
       const votes     = ((s.votes || {})[presenterQIdx]) || {};
-      const total     = Object.values(votes).reduce((a, b) => a + b, 0);
+      const words     = ((s.words || {})[presenterQIdx]) || {};
+
+      const isWord = q && q.type === "word";
+      const total  = isWord
+        ? Object.keys(words).length
+        : Object.values(votes).reduce((a, b) => a + b, 0);
 
       document.getElementById("stat-qnum").textContent =
         (presenterQIdx + 1) + " / " + questions.length;
@@ -863,7 +1302,6 @@
         document.getElementById("live-question-area").style.display = "block";
       }
 
-      /* bump animation on new vote */
       const statEl = document.getElementById("stat-votes");
       if (total > lastVoteCount) {
         statEl.classList.remove("bump");
@@ -880,12 +1318,25 @@
         document.getElementById("stat-timer").textContent = "—";
       }
 
-      renderPresenterBars(q, votes);
+      renderPresenterLive(q, votes, words);
       updatePresenterButtons();
 
+      // Show notes and the chart only at reveal.
+      const notesBox = document.getElementById("presenter-notes-box");
+      if (presenterPhase === "revealed" && q && q.notes && q.notes.trim()) {
+        document.getElementById("presenter-notes-content").textContent = q.notes;
+        notesBox.classList.add("visible");
+      } else {
+        notesBox.classList.remove("visible");
+      }
+
       if (presenterPhase === "revealed") {
-        document.getElementById("chart-area").style.display = "block";
-        drawChart("results-chart", currentChartType, q, votes, "presenter");
+        if (isWord) {
+          document.getElementById("chart-area").style.display = "none";
+        } else {
+          document.getElementById("chart-area").style.display = "block";
+          drawChart("results-chart", currentChartType, q, votes, "presenter");
+        }
       }
     }
 
@@ -895,19 +1346,34 @@
       document.getElementById("btn-next").disabled    = presenterPhase !== "revealed" || presenterQIdx >= localQuestions.length - 1;
     }
 
-    function renderPresenterBars(q, votes) {
+    function renderPresenterLive(q, votes, words) {
       if (!q) return;
-      const letters = ["A","B","C","D","E","F"];
-      const total   = Object.values(votes).reduce((a, b) => a + b, 0);
-      const maxVotes = Math.max(...Object.values(votes), 0);
+      const container = document.getElementById("live-results");
 
-      document.getElementById("live-results").innerHTML = (q.options || []).map((opt, i) => {
+      if (q.type === "word") {
+        // Word cloud rendering for both live tally and reveal.
+        if (Object.keys(words).length === 0) {
+          container.innerHTML = `<div class="word-cloud-wrap"><span class="word-cloud-empty">Waiting for responses...</span></div>`;
+          return;
+        }
+        container.innerHTML = `<div class="word-cloud-wrap" id="presenter-cloud"></div>`;
+        renderWordCloud("presenter-cloud", words, true);
+        return;
+      }
+
+      // Bars for both MC and Likert.
+      const total = Object.values(votes).reduce((a, b) => a + b, 0);
+      const palette = q.type === "likert" ? LIKERT_COLORS : OPT_COLORS;
+      const labels  = q.type === "likert"
+        ? (q.options || []).map((o, i) => (i + 1) + ". " + (o || ""))
+        : (q.options || []).map((o, i) => "ABCDEF"[i] + ". " + (o || ""));
+
+      container.innerHTML = (q.options || []).map((opt, i) => {
         const count = votes[i] || 0;
         const pct   = total > 0 ? Math.round(count / total * 100) : 0;
-        const c     = OPT_COLORS[i] || OPT_COLORS[0];
-        const isWinner = presenterPhase === "revealed" && count === maxVotes && maxVotes > 0;
-        return `<div class="result-bar-row${isWinner ? " winner" : ""}">
-          <div class="result-bar-label" style="color:${c.color}">${letters[i]}. ${opt || "Option " + letters[i]}</div>
+        const c     = palette[i] || palette[0];
+        return `<div class="result-bar-row">
+          <div class="result-bar-label" style="color:${c.color}">${escapeHtml(labels[i])}</div>
           <div class="result-bar-track">
             <div class="result-bar-fill" style="width:${pct}%;background:${c.color}">
               ${pct > 6 ? `<span class="result-bar-pct">${pct}%</span>` : ""}
@@ -918,13 +1384,71 @@
       }).join("");
     }
 
+    /* ── word cloud renderer ── */
+    function renderWordCloud(containerId, wordsObj, isPresenterView) {
+      const el = document.getElementById(containerId);
+      if (!el) return;
+      // Tally frequency.
+      const freq = {};
+      Object.values(wordsObj).forEach(entry => {
+        const w = (entry.word || "").trim();
+        if (!w) return;
+        freq[w] = (freq[w] || 0) + 1;
+      });
+      const items = Object.entries(freq).sort((a, b) => b[1] - a[1]);
+      if (items.length === 0) {
+        el.innerHTML = `<span class="word-cloud-empty">No responses yet.</span>`;
+        return;
+      }
+      const maxFreq = items[0][1];
+      el.innerHTML = items.map(([word, n]) => {
+        const size = 14 + Math.round((n / maxFreq) * 28);
+        const opacity = 0.55 + 0.45 * (n / maxFreq);
+        const isHidden = hiddenWords.has(word);
+        const hideBtn = isPresenterView
+          ? `<button class="word-hide-btn" data-word="${escapeAttr(word)}" title="Hide this word">${isHidden ? "+" : "×"}</button>`
+          : "";
+        return `<span class="word-cloud-item ${isHidden ? "hidden-word" : ""}"
+                 style="font-size:${size}px;opacity:${opacity};color:var(--charcoal)">
+                 ${escapeHtml(word)}${n > 1 ? ` <span style="font-size:0.6em;color:var(--mid)">×${n}</span>` : ""}
+                 ${hideBtn}
+               </span>`;
+      }).join("");
+
+      if (isPresenterView) {
+        el.querySelectorAll(".word-hide-btn").forEach(btn => {
+          btn.addEventListener("click", e => {
+            e.stopPropagation();
+            const w = btn.dataset.word;
+            if (hiddenWords.has(w)) hiddenWords.delete(w);
+            else                     hiddenWords.add(w);
+            // Re-render with updated hidden state.
+            renderWordCloud(containerId, wordsObj, true);
+          });
+        });
+      }
+    }
+
     /* ── launch ── */
     document.getElementById("btn-launch").addEventListener("click", async () => {
       const timerEnd = Date.now() + TIMER_DURATION * 1000;
-      lastVoteCount  = 0;
-      await set(dbRef("session"), {
-        phase: "voting", questionIndex: presenterQIdx,
-        timerEnd, questions: localQuestions, votes: {}
+      lastVoteCount = 0;
+      hiddenWords.clear();
+      const cleanQuestions = localQuestions.map(q => {
+        const c = { type: q.type, text: q.text || "", notes: q.notes || "" };
+        if (q.type === "mc")     c.options = q.options || [];
+        if (q.type === "likert") { c.options = q.options || []; c.anchors = q.anchors || {}; }
+        return c;
+      });
+      // Clear any stale data for this question index before launching.
+      await update(dbRef("session"), {
+        phase: "voting",
+        questionIndex: presenterQIdx,
+        timerEnd,
+        questions: cleanQuestions,
+        [`votes/${presenterQIdx}`]: null,
+        [`voters/${presenterQIdx}`]: null,
+        [`words/${presenterQIdx}`]: null
       });
       presenterPhase = "voting";
       updatePresenterButtons();
@@ -937,24 +1461,61 @@
       }, 1000);
     });
 
-    /* ── reveal ── */
+    /* ── reveal (with countdown) ── */
     document.getElementById("btn-reveal").addEventListener("click", async () => {
       if (timerInterval) clearInterval(timerInterval);
+      await playRevealCountdown();
       await doReveal();
     });
+
+    function playRevealCountdown() {
+      return new Promise(resolve => {
+        const overlay = document.getElementById("reveal-overlay");
+        const num     = document.getElementById("reveal-countdown");
+        overlay.classList.add("visible");
+        let n = 3;
+        num.textContent = n;
+        const tick = setInterval(() => {
+          n--;
+          if (n > 0) {
+            num.textContent = n;
+            // Restart animation.
+            num.style.animation = "none";
+            void num.offsetWidth;
+            num.style.animation = "";
+          } else {
+            clearInterval(tick);
+            overlay.classList.remove("visible");
+            resolve();
+          }
+        }, 900);
+      });
+    }
 
     async function doReveal() {
       await update(dbRef("session"), { phase: "revealed" });
       presenterPhase = "revealed";
       document.getElementById("stat-timer").textContent = "—";
-      document.getElementById("chart-area").style.display = "block";
       updatePresenterButtons();
       const snap  = await get(dbRef("session"));
       const s     = snap.val() || {};
-      const q     = (s.questions || localQuestions)[presenterQIdx];
+      const q     = ((s.questions || localQuestions)[presenterQIdx]);
       const votes = ((s.votes || {})[presenterQIdx]) || {};
-      renderPresenterBars(q, votes);
-      drawChart("results-chart", currentChartType, q, votes, "presenter");
+      const words = ((s.words || {})[presenterQIdx]) || {};
+      renderPresenterLive(q, votes, words);
+
+      // Show notes panel.
+      if (q && q.notes && q.notes.trim()) {
+        document.getElementById("presenter-notes-content").textContent = q.notes;
+        document.getElementById("presenter-notes-box").classList.add("visible");
+      }
+
+      if (q && q.type !== "word") {
+        document.getElementById("chart-area").style.display = "block";
+        drawChart("results-chart", currentChartType, q, votes, "presenter");
+      } else {
+        document.getElementById("chart-area").style.display = "none";
+      }
     }
 
     /* ── next ── */
@@ -963,57 +1524,96 @@
       presenterQIdx++;
       presenterPhase = "idle";
       lastVoteCount  = 0;
+      hiddenWords.clear();
       await update(dbRef("session"), { phase: "idle", questionIndex: presenterQIdx });
       document.getElementById("chart-area").style.display = "none";
+      document.getElementById("presenter-notes-box").classList.remove("visible");
       if (presenterChart) { presenterChart.destroy(); presenterChart = null; }
       renderLivePanelStatic();
     });
 
     /* ── reset ── */
     document.getElementById("btn-reset").addEventListener("click", async () => {
+      if (!confirm("Reset the entire session? All votes and responses will be cleared.")) return;
       if (timerInterval) clearInterval(timerInterval);
       presenterQIdx  = 0;
       presenterPhase = "idle";
       lastVoteCount  = 0;
-      await set(dbRef("session"), { phase: "idle", questionIndex: 0, questions: localQuestions, votes: {} });
+      hiddenWords.clear();
+      const cleanQuestions = localQuestions.map(q => {
+        const c = { type: q.type, text: q.text || "", notes: q.notes || "" };
+        if (q.type === "mc")     c.options = q.options || [];
+        if (q.type === "likert") { c.options = q.options || []; c.anchors = q.anchors || {}; }
+        return c;
+      });
+      await set(dbRef("session"), {
+        phase: "idle",
+        questionIndex: 0,
+        questions: cleanQuestions,
+        votes: null,
+        voters: null,
+        words: null
+      });
       document.getElementById("chart-area").style.display = "none";
       document.getElementById("stat-votes").textContent = "0";
       document.getElementById("stat-timer").textContent = "—";
+      document.getElementById("presenter-notes-box").classList.remove("visible");
       if (presenterChart) { presenterChart.destroy(); presenterChart = null; }
       renderLivePanelStatic();
     });
 
-    /* ── presenter chart toggle ── */
-    document.querySelectorAll("#chart-area .chart-toggle-btn").forEach(btn => {
+    /* ── chart toggle (presenter) ── */
+    document.querySelectorAll("#chart-toggle-presenter .chart-toggle-btn").forEach(btn => {
       btn.addEventListener("click", async () => {
         currentChartType = btn.dataset.type;
-        document.querySelectorAll("#chart-area .chart-toggle-btn")
+        document.querySelectorAll("#chart-toggle-presenter .chart-toggle-btn")
           .forEach(b => b.classList.toggle("active", b.dataset.type === currentChartType));
         const snap  = await get(dbRef("session"));
         const s     = snap.val() || {};
         const q     = (s.questions || localQuestions)[presenterQIdx];
         const votes = ((s.votes || {})[presenterQIdx]) || {};
-        drawChart("results-chart", currentChartType, q, votes, "presenter");
+        if (q && q.type !== "word") drawChart("results-chart", currentChartType, q, votes, "presenter");
       });
     });
 
     /* ── copy link ── */
     document.getElementById("btn-copy-url").addEventListener("click", () => {
-      navigator.clipboard.writeText(window.location.href).then(() => {
+      const url = window.location.origin + window.location.pathname;
+      navigator.clipboard.writeText(url).then(() => {
         const btn = document.getElementById("btn-copy-url");
         btn.textContent = "Copied!";
         setTimeout(() => btn.textContent = "Copy Link", 2000);
       });
     });
 
-    /* ── settings ── */
-    document.getElementById("btn-save-settings").addEventListener("click", () => {
+    /* ── settings (persistent) ── */
+    document.getElementById("btn-save-settings").addEventListener("click", async () => {
       const t = parseInt(document.getElementById("setting-timer").value);
-      if (!isNaN(t) && t >= 10) TIMER_DURATION = t;
+      const chart = document.getElementById("setting-chart").value;
       const newPin = document.getElementById("setting-pin").value.trim();
-      if (newPin.length >= 4) PRESENTER_PIN = newPin;
+
+      const updates = {};
+      if (!isNaN(t) && t >= 10) {
+        TIMER_DURATION = t;
+        updates.timerDuration = t;
+      }
+      if (chart === "bar" || chart === "pie") {
+        currentChartType = chart;
+        currentSChart    = chart;
+        updates.defaultChart = chart;
+      }
+      if (newPin && newPin.length >= 4) {
+        updates.pin = newPin;
+      } else if (newPin && newPin.length < 4) {
+        alert("PIN must be at least 4 digits. Other settings saved.");
+      }
+
+      await update(dbRef("settings"), updates);
       document.getElementById("setting-pin").value = "";
-      alert("Settings saved successfully.");
+      const btn = document.getElementById("btn-save-settings");
+      const original = btn.textContent;
+      btn.textContent = "Saved ✓";
+      setTimeout(() => btn.textContent = original, 1600);
     });
 
     /* ══════════════════════════════════
@@ -1021,11 +1621,14 @@
     ══════════════════════════════════ */
     function drawChart(canvasId, type, q, votes, target) {
       if (!q) return;
-      const letters  = ["A","B","C","D","E","F"];
-      const labels   = (q.options || []).map((o, i) => letters[i] + ". " + (o || "Option " + letters[i]));
-      const data     = (q.options || []).map((o, i) => votes[i] || 0);
-      const colors   = OPT_COLORS.slice(0, q.options.length).map(c => c.color);
-      const ctx      = document.getElementById(canvasId).getContext("2d");
+      if (q.type === "word") return; // word clouds are not chartable
+      const palette = q.type === "likert" ? LIKERT_COLORS : OPT_COLORS;
+      const labels  = q.type === "likert"
+        ? (q.options || []).map((o, i) => (i + 1) + ". " + (o || ""))
+        : (q.options || []).map((o, i) => "ABCDEF"[i] + ". " + (o || ""));
+      const data    = (q.options || []).map((o, i) => votes[i] || 0);
+      const colors  = palette.slice(0, (q.options || []).length).map(c => c.color);
+      const ctx     = document.getElementById(canvasId).getContext("2d");
 
       if (target === "presenter") {
         if (presenterChart) presenterChart.destroy();
@@ -1087,6 +1690,17 @@
         }
       };
     }
+
+    /* ── helpers ── */
+    function escapeHtml(s) {
+      return String(s == null ? "" : s)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+    function escapeAttr(s) { return escapeHtml(s); }
 
   </script>
 </body>
