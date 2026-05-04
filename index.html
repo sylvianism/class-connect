@@ -463,9 +463,6 @@
       </div>
       <div id="student-results-body"></div>
       <div style="text-align:center;margin-top:20px;font-size:13px;color:var(--mid)" id="results-total-text"></div>
-      <div style="text-align:center;margin-top:16px">
-        <button class="btn-ghost" id="btn-back-voting">Back to Voting</button>
-      </div>
     </div>
   </div>
 
@@ -768,7 +765,11 @@
     /* ══════════════════════════════════
        FIREBASE LISTENERS
     ══════════════════════════════════ */
+    let sessionSubscribed = false;
     function subscribeSession() {
+      if (sessionSubscribed) return; // never attach more than once per page lifecycle
+      sessionSubscribed = true;
+
       onValue(dbRef("session"), snap => {
         const s = snap.val() || {};
         lastSession = s;
@@ -791,7 +792,7 @@
     /* ══════════════════════════════════
        VOTER VIEW
     ══════════════════════════════════ */
-    function syncVoterView(s) {
+    async function syncVoterView(s) {
       const badge   = document.getElementById("voter-live-badge");
       const content = document.getElementById("voter-content");
       const qIdx    = s.questionIndex || 0;
@@ -815,14 +816,33 @@
         // Hard guard against late submissions: timer expired already.
         const expired = s.timerEnd && Date.now() > s.timerEnd;
 
-        // Already voted on this specific question?
-        const alreadyVoted = myVotes[qIdx] !== undefined;
-
-        if (alreadyVoted) { content.innerHTML = votedHTML(); return; }
-        if (expired)      { content.innerHTML = waitingHTML("Time is up. Waiting for the reveal..."); return; }
+        // Vote-lock check survives refresh: trust Firebase, not the in-memory cache.
+        // If voters/{qIdx}/{uid} or words/{qIdx}/{uid} exists, this device already voted.
+        const alreadyVotedLocal = myVotes[qIdx] !== undefined;
+        if (alreadyVotedLocal) { content.innerHTML = votedHTML(); return; }
+        if (expired)           { content.innerHTML = waitingHTML("Time is up. Waiting for the reveal..."); return; }
 
         const q = (s.questions || [])[qIdx];
         if (!q) { content.innerHTML = waitingHTML(); return; }
+
+        // Durable check: ask Firebase whether this uid has already submitted.
+        if (myUid) {
+          const path = (q.type === "word")
+            ? `session/words/${qIdx}/${myUid}`
+            : `session/voters/${qIdx}/${myUid}`;
+          try {
+            const existing = await get(dbRef(path));
+            if (existing.exists()) {
+              // Sync the local cache so subsequent renders short-circuit.
+              myVotes[qIdx] = existing.val().choice ?? existing.val().word ?? true;
+              content.innerHTML = votedHTML();
+              return;
+            }
+          } catch (e) {
+            // If the read fails, fall through to render the voting UI.
+            // The cast-vote handler still has its own guards.
+          }
+        }
 
         const secsLeft = s.timerEnd ? Math.max(0, Math.round((s.timerEnd - Date.now()) / 1000)) : TIMER_DURATION;
         renderVotingUI(q, qIdx, secsLeft, s.timerEnd);
@@ -1058,8 +1078,6 @@
 
       showScreen("screen-results");
     }
-
-    document.getElementById("btn-back-voting").addEventListener("click", goToVoter);
 
     /* ══════════════════════════════════
        PRESENTER — DATA
