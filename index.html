@@ -796,8 +796,12 @@
       const badge   = document.getElementById("voter-live-badge");
       const content = document.getElementById("voter-content");
       const qIdx    = s.questionIndex || 0;
+      const onResults = document.getElementById("screen-results").classList.contains("active");
 
       if (!s.phase || s.phase === "idle") {
+        // Idle means the presenter has not launched (or has just clicked Next).
+        // If the student is sitting on the old results screen, bring them back to voter waiting.
+        if (onResults) showScreen("screen-voter");
         badge.classList.remove("visible");
         content.innerHTML = waitingHTML();
         return;
@@ -811,6 +815,9 @@
         return;
       }
       if (s.phase === "voting") {
+        // If the student is on the results screen from a previous question,
+        // pull them back to the voter screen so the new question is visible.
+        if (onResults) showScreen("screen-voter");
         badge.classList.add("visible");
 
         // Hard guard against late submissions: timer expired already.
