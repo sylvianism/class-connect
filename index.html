@@ -62,6 +62,32 @@
 
     /* ── voter ── */
     .voter-screen { min-height: 100vh; padding: 24px 20px; max-width: 520px; margin: 0 auto; }
+
+    /* ── rejoin banner ── */
+    .rejoin-banner {
+      background: #fff7e6;
+      border: 1.5px solid #ffd98a;
+      color: #6b4c00;
+      border-radius: var(--radius-sm);
+      padding: 12px 16px;
+      font-size: 13px;
+      line-height: 1.4;
+      margin-bottom: 16px;
+      display: none;
+      animation: fadeInUp 0.3s ease;
+      position: relative;
+    }
+    .rejoin-banner.visible { display: block; }
+    .rejoin-banner-close {
+      position: absolute;
+      top: 8px; right: 10px;
+      background: none; border: none;
+      color: #6b4c00; cursor: pointer;
+      font-size: 16px; line-height: 1;
+      padding: 4px 6px; opacity: 0.6;
+    }
+    .rejoin-banner-close:hover { opacity: 1; }
+    .rejoin-banner-strong { font-weight: 600; }
     .voter-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 32px; }
     .voter-brand { font-family: "DM Serif Display", serif; font-size: 18px; }
     .voter-brand span { color: var(--red); }
@@ -450,6 +476,10 @@
         <div class="voter-brand">Vote<span>InClass</span></div>
         <div class="live-badge" id="voter-live-badge">● Live</div>
       </div>
+      <div class="rejoin-banner" id="voter-rejoin-banner">
+        <button class="rejoin-banner-close" data-dismiss="voter-rejoin-banner">×</button>
+        <span id="voter-rejoin-text"></span>
+      </div>
       <div id="voter-content"></div>
     </div>
   </div>
@@ -457,6 +487,10 @@
   <!-- STUDENT RESULTS -->
   <div id="screen-results" class="screen">
     <div class="results-screen">
+      <div class="rejoin-banner" id="results-rejoin-banner">
+        <button class="rejoin-banner-close" data-dismiss="results-rejoin-banner">×</button>
+        <span id="results-rejoin-text"></span>
+      </div>
       <div class="results-header">
         <div class="results-title">Results</div>
         <div class="results-q" id="results-question-text"></div>
@@ -640,6 +674,8 @@
     let isPresenter       = false;
     let myVotes           = {}; // {qIdx: optionIndex} — local cache to lock the UI
     let lastSession       = null;
+    let voterFirstSync    = true; // flips false after the first syncVoterView call
+    let rejoinDismissed   = false; // student has manually dismissed the banner this session
     let hiddenWords       = new Set(); // presenter-only, in-memory moderation
 
     let localQuestions = [
@@ -722,6 +758,11 @@
     function goToVoter() {
       isPresenter = false;
       myVotes = {};
+      voterFirstSync = true;
+      rejoinDismissed = false;
+      // Hide any previously shown banners.
+      document.getElementById("voter-rejoin-banner").classList.remove("visible");
+      document.getElementById("results-rejoin-banner").classList.remove("visible");
       showScreen("screen-voter");
       subscribeSession();
     }
@@ -798,6 +839,19 @@
       const qIdx    = s.questionIndex || 0;
       const onResults = document.getElementById("screen-results").classList.contains("active");
 
+      // Rejoin detection: only on the very first sync after entering the voter flow.
+      // Show a banner if the session is already mid-flight (past Q1 or already in voting/revealed state).
+      if (voterFirstSync) {
+        voterFirstSync = false;
+        const sessionInProgress =
+          (qIdx > 0) ||
+          (s.phase === "voting") ||
+          (s.phase === "revealed");
+        if (sessionInProgress && !rejoinDismissed) {
+          showRejoinBanner(s, qIdx);
+        }
+      }
+
       if (!s.phase || s.phase === "idle") {
         // Idle means the presenter has not launched (or has just clicked Next).
         // If the student is sitting on the old results screen, bring them back to voter waiting.
@@ -870,6 +924,30 @@
         <div class="voted-title">Response Received</div>
         <div class="voted-sub">Waiting for the results...</div>
       </div>`;
+    }
+
+    function showRejoinBanner(s, qIdx) {
+      const total = (s.questions || []).length;
+      const qNumber = qIdx + 1;
+      let msg = "";
+      if (s.phase === "voting") {
+        msg = `<span class="rejoin-banner-strong">Welcome back.</span> You have rejoined an active session, currently on Question ${qNumber} of ${total}.`;
+      } else if (s.phase === "revealed") {
+        msg = `<span class="rejoin-banner-strong">Welcome back.</span> You have rejoined the session. Currently viewing the results for Question ${qNumber} of ${total}.`;
+      } else {
+        msg = `<span class="rejoin-banner-strong">Welcome back.</span> The session is on Question ${qNumber} of ${total}. Stand by for the next question.`;
+      }
+      const voterBanner   = document.getElementById("voter-rejoin-banner");
+      const resultsBanner = document.getElementById("results-rejoin-banner");
+      document.getElementById("voter-rejoin-text").innerHTML   = msg;
+      document.getElementById("results-rejoin-text").innerHTML = msg;
+      voterBanner.classList.add("visible");
+      resultsBanner.classList.add("visible");
+      // Auto-dismiss after 8 seconds so it does not persist forever.
+      setTimeout(() => {
+        voterBanner.classList.remove("visible");
+        resultsBanner.classList.remove("visible");
+      }, 8000);
     }
 
     function renderVotingUI(q, qIdx, secsLeft, timerEnd) {
@@ -1466,15 +1544,21 @@
         return c;
       });
       // Clear any stale data for this question index before launching.
-      await update(dbRef("session"), {
-        phase: "voting",
-        questionIndex: presenterQIdx,
-        timerEnd,
-        questions: cleanQuestions,
-        [`votes/${presenterQIdx}`]: null,
-        [`voters/${presenterQIdx}`]: null,
-        [`words/${presenterQIdx}`]: null
-      });
+      try {
+        await update(dbRef("session"), {
+          phase: "voting",
+          questionIndex: presenterQIdx,
+          timerEnd,
+          questions: cleanQuestions,
+          [`votes/${presenterQIdx}`]: null,
+          [`voters/${presenterQIdx}`]: null,
+          [`words/${presenterQIdx}`]: null
+        });
+      } catch (err) {
+        console.error("Launch failed:", err);
+        alert("Launch failed. Check the Firebase rules for voters and words paths. See chat for details.");
+        return;
+      }
       presenterPhase = "voting";
       updatePresenterButtons();
       if (timerInterval) clearInterval(timerInterval);
@@ -1571,14 +1655,24 @@
         if (q.type === "likert") { c.options = q.options || []; c.anchors = q.anchors || {}; }
         return c;
       });
-      await set(dbRef("session"), {
-        phase: "idle",
-        questionIndex: 0,
-        questions: cleanQuestions,
-        votes: null,
-        voters: null,
-        words: null
-      });
+      // Use update with explicit paths so each write is checked against its own rule.
+      // A blanket set() on /session would require write permission at the root, which
+      // the granular rules do not grant.
+      try {
+        await update(dbRef("session"), {
+          phase: "idle",
+          questionIndex: 0,
+          timerEnd: null,
+          questions: cleanQuestions,
+          votes: null,
+          voters: null,
+          words: null
+        });
+      } catch (err) {
+        console.error("Reset failed:", err);
+        alert("Reset failed. Check the Firebase rules — the parent paths for voters and words need a write rule. See chat for details.");
+        return;
+      }
       document.getElementById("chart-area").style.display = "none";
       document.getElementById("stat-votes").textContent = "0";
       document.getElementById("stat-timer").textContent = "—";
@@ -1608,6 +1702,14 @@
         const btn = document.getElementById("btn-copy-url");
         btn.textContent = "Copied!";
         setTimeout(() => btn.textContent = "Copy Link", 2000);
+      });
+    });
+
+    /* ── rejoin banner dismiss ── */
+    document.querySelectorAll(".rejoin-banner-close").forEach(btn => {
+      btn.addEventListener("click", () => {
+        rejoinDismissed = true;
+        document.getElementById(btn.dataset.dismiss).classList.remove("visible");
       });
     });
 
